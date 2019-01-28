@@ -1,5 +1,5 @@
-#ifndef __SCANNER_GEN_LINKED_LIST
-#define __SCANNER_GEN_LINKED_LIST 1
+#ifndef __PROJECT_GEN_LINKED_LIST
+#define __PROJECT_GEN_LINKED_LIST 1
 
 #include <stdlib.h>
 

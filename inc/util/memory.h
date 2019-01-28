@@ -1,5 +1,5 @@
-#ifndef __SCANNER_MEMORY_UTIL__
-#define __SCANNER_MEMORY_UTIL__ 1
+#ifndef __PROJECT_MEMORY_UTIL__
+#define __PROJECT_MEMORY_UTIL__ 1
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -2,7 +2,7 @@
 # inputs:
 #    test_file_name.c
 # outputs:
-#   .tmp/filename.gbt
+#   .tmp/filename.gt
 #
 require 'tempfile'
 require 'fileutils'
@@ -19,12 +19,12 @@ contents.scan(/--FILE\s+(.*?)--(.*?)--ENDFILE--/m).each do |matches|
   content[0] = '' # remove first newline char
   content.chomp!
   if !created_files.include?(filename)
-    File.open(".tmp/gbt/#{filename}", "w") { |f| f.write(content) }
+    File.open(".tmp/gt/#{filename}", "w") { |f| f.write(content) }
     created_files << filename
   end
 end
 
-temp_file = Tempfile.new("gbtest")
+temp_file = Tempfile.new("gtest")
 begin
   contents.each_line do |line|
     start_create = line.match(/--FILE\s+(.*?)--/)

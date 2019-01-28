@@ -6,7 +6,7 @@ BOOLEAN list_initialized = FALSE;
 
 void* malloc_trace(size_t size, const char *file, int line, const char *func) {
   void *p = malloc(size);
-  if (SCANNER_MEMORY_DEBUG) {
+  if (PROJECT_MEMORY_DEBUG) {
     memory_list_init();
 
     MemoryItem *itm = malloc(sizeof(MemoryItem));
@@ -14,7 +14,7 @@ void* malloc_trace(size_t size, const char *file, int line, const char *func) {
     itm->pp = p;
     list_ins_next(&memory_list, NULL, itm);
 
-    #if SCANNER_MEMORY_DEBUG_VERBOSE == 1
+    #if PROJECT_MEMORY_DEBUG_VERBOSE == 1
       printf ("Allocated = %s, %i, %s, %p[%li]\n", file, line, func, p, size);
     #endif
   }
@@ -22,9 +22,9 @@ void* malloc_trace(size_t size, const char *file, int line, const char *func) {
 }
 
 void free_trace(void *p, const char *file, int line, const char *func) {
-  if (SCANNER_MEMORY_DEBUG) {
+  if (PROJECT_MEMORY_DEBUG) {
     memory_list_init();
-    #if SCANNER_MEMORY_DEBUG_VERBOSE == 1
+    #if PROJECT_MEMORY_DEBUG_VERBOSE == 1
       printf ("Free = %s, %i, %s, %p\n", file, line, func, p);
     #endif
     remove_memory_list_item(p);
@@ -71,7 +71,7 @@ static void memory_list_init() {
 }
 
 void print_memory_summary() {
-  #if SCANNER_MEMORY_DEBUG_VERBOSE == 1
+  #if PROJECT_MEMORY_DEBUG_VERBOSE == 1
     printf ("Memory List: Objects allocated - %d\n", list_size(&memory_list));
   #endif
 
@@ -84,7 +84,7 @@ void print_memory_summary() {
 
   while (1) {
 
-    #if SCANNER_MEMORY_DEBUG_VERBOSE == 1
+    #if PROJECT_MEMORY_DEBUG_VERBOSE == 1
       printf ("Leaked Memory Item: %s, %i, %s, %p\n", itm->file, itm->line, itm->func, itm->pp);
     #endif
 

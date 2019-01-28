@@ -21,7 +21,7 @@ DEPEXT      := d
 OBJEXT      := o
 LIBEXT      := so
 LIBDIR      := lib
-LIBFILES    := $(wildcard ./lib/*.so)
+LIBFILES    := $(wildcard lib/*.so)
 LIBLINK     := $(addprefix -l, $(LIBFILES))
 
 current_dir = $(shell pwd)
@@ -47,10 +47,10 @@ directories:
 	mkdir -p $(INCDIR)
 
 main_nodeps:
-	$(CC) $(CXXSTD) $(INC) $(LINKLIB) $(PROGRAMFILES) -lm -o $(TARGETDIR)/$(TARGET)
+	$(CC) $(CXXSTD) $(INC) $(LINKLIB) $(LIBLINK) $(PROGRAMFILES) -lm -o $(TARGETDIR)/$(TARGET)
 
 main: $(OBJECTS)
-	$(CC) $(LINKLIB) -o $(TARGETDIR)/$(TARGET) $^
+	$(CC) $(LINKLIB) $(LIBLINK) -o $(TARGETDIR)/$(TARGET) $^
 
 sharedlib: $(OBJECTS)
 	$(CC) $(SHAREDPARAM) -o $(LIBDIR)/$(SHAREDLIBTARGET).$(LIBEXT) $^
