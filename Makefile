@@ -5,6 +5,7 @@ GCC         := gcc
 
 #The Target Binary Program
 TARGET      := main
+SHAREDLIBTARGET := libfoo
 TESTTARGET  := test_suite
 
 #The Directories, Source, Includes, Objects, Binary and Resources
@@ -12,13 +13,16 @@ SRCDIR      := src
 EXTDIR      := ext
 TESTDIR     := test
 INCDIR      := inc
-LIBDIR      := lib
 BUILDDIR    := obj
 TARGETDIR   := bin
 RESDIR      := res
 SRCEXT      := c
 DEPEXT      := d
 OBJEXT      := o
+LIBEXT      := so
+LIBDIR      := lib
+LIBFILES    := $(wildcard ./lib/*.so)
+LIBLINK     := $(addprefix -l, $(LIBFILES))
 
 current_dir = $(shell pwd)
 
@@ -26,10 +30,12 @@ current_dir = $(shell pwd)
 CXXSTD      := -Wno-deprecated-register -g -O0
 CFLAGS      := $(CXXSTD) -fopenmp -Wall -O3 -g
 DYNLIBPARAM := -dynamiclib
-INC         := -I$(INCDIR) -I/usr/local/include -Isrc -Isrc/test -I$(LIBDIR) -I$(EXTDIR)
+INC         := -I$(INCDIR) -I/usr/local/include -Isrc -Isrc/test -I$(EXTDIR)
+LINKLIB     := -L$(LIBDIR)
+SHAREDPARAM := -shared
 
-PROGRAMFILES := $(shell find $(SRCDIR)/ -type f -name *.$(SRCEXT))
-TESTFILES  := $(shell find $(TESTDIR)/ $(SRCDIR)/ ! -name 'main.c' -type f -name *.$(SRCEXT) )
+PROGRAMFILES := $(shell find $(SRCDIR)/ -type f -name "*.$(SRCEXT)")
+TESTFILES  := $(shell find $(TESTDIR)/ $(SRCDIR)/ ! -name 'main.c' -type f -name "*.$(SRCEXT)" )
 OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(PROGRAMFILES:.$(SRCEXT)=.$(OBJEXT)))
 
 all: directories main tests
@@ -41,10 +47,15 @@ directories:
 	mkdir -p $(INCDIR)
 
 main_nodeps:
-	$(CC) $(CXXSTD) $(INC) $(PROGRAMFILES) -lm -o $(TARGETDIR)/$(TARGET)
+	$(CC) $(CXXSTD) $(INC) $(LINKLIB) $(PROGRAMFILES) -lm -o $(TARGETDIR)/$(TARGET)
 
 main: $(OBJECTS)
-	$(CC) -o $(TARGETDIR)/$(TARGET) $^
+	$(CC) $(LINKLIB) -o $(TARGETDIR)/$(TARGET) $^
+
+sharedlib: $(OBJECTS)
+	$(CC) $(SHAREDPARAM) -o $(LIBDIR)/$(SHAREDLIBTARGET).$(LIBEXT) $^
+
+print-%  : ; @echo $* = $($*)
 
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(dir $@)
@@ -56,7 +67,7 @@ $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@rm -f $(BUILDDIR)/$*.$(DEPEXT).tmp
 
 tests:
-	$(CC) $(CXXSTD) $(INC) $(TESTFILES) -lcspec -lm -o $(TARGETDIR)/$(TESTTARGET)
+	$(CC) $(CXXSTD) $(INC) $(LINKLIB) $(TESTFILES) -lcspec -lm -o $(TARGETDIR)/$(TESTTARGET)
 	find ./test/ -name "*.c" -exec rm -f {} \;
 
 .PHONY: all tests clean
