@@ -30,6 +30,7 @@ INC         := -I$(INCDIR) -I/usr/local/include -Isrc -Isrc/test -I$(LIBDIR) -I$
 
 PROGRAMFILES := $(shell find $(SRCDIR)/ -type f -name *.$(SRCEXT))
 TESTFILES  := $(shell find $(TESTDIR)/ $(SRCDIR)/ ! -name 'main.c' -type f -name *.$(SRCEXT) )
+OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(PROGRAMFILES:.$(SRCEXT)=.$(OBJEXT)))
 
 all: directories main tests
 
@@ -39,13 +40,26 @@ directories:
 	mkdir -p $(TESTDIR)
 	mkdir -p $(INCDIR)
 
-main:
+main_nodeps:
 	$(CC) $(CXXSTD) $(INC) $(PROGRAMFILES) -lm -o $(TARGETDIR)/$(TARGET)
+
+main: $(OBJECTS)
+	$(CC) -o $(TARGETDIR)/$(TARGET) $^
+
+$(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
+	@mkdir -p $(dir $@)
+	$(CC) $(CXXSTD) $(INC) -c -o $@ $<
+	@$(CC) $(CXXSTD) $(INC) -MM $(SRCDIR)/$*.$(SRCEXT) > $(BUILDDIR)/$*.$(DEPEXT)
+	@cp -f $(BUILDDIR)/$*.$(DEPEXT) $(BUILDDIR)/$*.$(DEPEXT).tmp
+	@sed -e 's|.*:|$(BUILDDIR)/$*.$(OBJEXT):|' < $(BUILDDIR)/$*.$(DEPEXT).tmp > $(BUILDDIR)/$*.$(DEPEXT)
+	@sed -e 's/.*://' -e 's/\\$$//' < $(BUILDDIR)/$*.$(DEPEXT).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(BUILDDIR)/$*.$(DEPEXT)
+	@rm -f $(BUILDDIR)/$*.$(DEPEXT).tmp
 
 tests:
 	$(CC) $(CXXSTD) $(INC) $(TESTFILES) -lcspec -lm -o $(TARGETDIR)/$(TESTTARGET)
 	find ./test/ -name "*.c" -exec rm -f {} \;
 
-.PHONY: clean
+.PHONY: all tests clean
 clean:
-	rm -f bin/* obj/*
+	rm -rf obj && mkdir obj
+	rm -rf bin/* obj/*
